@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Challenge Game - RISQI ADITYA</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body {
+  background: var(--bg);
+  color: #e6eef6;
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.game-card {
+  background: var(--card);
+  padding: 28px;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(2,6,23,0.5);
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+}
+
+.game-card h2 {
+  margin-bottom: 12px;
+}
+
+#question {
+  font-size: 26px;
+  margin: 20px 0;
+}
+
+input[type="number"] {
+  padding: 10px;
+  width: 100px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-size: 18px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px 5px 0 5px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--accent), #16a34a);
+  color: #062018;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.score, .timer {
+  margin-top: 14px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.level {
+  margin-top: 8px;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.leaderboard {
+  margin-top: 16px;
+  text-align: left;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 8px;
+}
+.leaderboard h4 { margin: 6px 0; }
+</style>
+</head>
+<body>
+
+<div class="game-card">
+  <h2>Math Challenge 🔥</h2>
+  <div class="level" id="level">Level: 1</div>
+  <div class="timer" id="timer">Time: 10s</div>
+  <div id="question">Press Start to Begin</div>
+  <input type="number" id="answer" placeholder="Answer" disabled>
+  <div>
+    <button id="startBtn">Start Game</button>
+    <button id="submitBtn" disabled>Submit</button>
+  </div>
+  <div class="score" id="score">Score: 0</div>
+  <div class="leaderboard" id="leaderboard"><h4>Leaderboard</h4><ol id="scoresList"></ol></div>
+</div>
+
+<script>
+let score = 0;
+let currentAnswer = 0;
+let level = 1;
+let timer = 10;
+let timerInterval;
+let scores = [];
+
+const questionEl = document.getElementById('question');
+const answerEl = document.getElementById('answer');
+const startBtn = document.getElementById('startBtn');
+const submitBtn = document.getElementById('submitBtn');
+const scoreEl = document.getElementById('score');
+const timerEl = document.getElementById('timer');
+const levelEl = document.getElementById('level');
+const scoresList = document.getElementById('scoresList');
+
+function generateQuestion() {
+  const max = level * 10 + 10;
+  const a = Math.floor(Math.random() * max) + 1;
+  const b = Math.floor(Math.random() * max) + 1;
+  const operators = ['+', '-', '*'];
+  const op = operators[Math.floor(Math.random() * operators.length)];
+  
+  switch(op){
+    case '+': currentAnswer = a + b; questionEl.textContent = `${a} + ${b}`; break;
+    case '-': currentAnswer = a - b; questionEl.textContent = `${a} - ${b}`; break;
+    case '*': currentAnswer = a * b; questionEl.textContent = `${a} × ${b}`; break;
+  }
+}
+
+function startTimer() {
+  timer = 10;
+  timerEl.textContent = `Time: ${timer}s`;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timer--;
+    timerEl.textContent = `Time: ${timer}s`;
+    if(timer <= 0){
+      clearInterval(timerInterval);
+      alert(`Time's up! Correct answer was ${currentAnswer}`);
+      nextQuestion();
+    }
+  }, 1000);
+}
+
+function nextQuestion() {
+  answerEl.value = '';
+  generateQuestion();
+  startTimer();
+  answerEl.focus();
+  if(score >= level * 50){
+    level++;
+    levelEl.textContent = `Level: ${level}`;
+  }
+}
+
+startBtn.addEventListener('click', () => {
+  score = 0; level = 1;
+  scoreEl.textContent = `Score: ${score}`;
+  levelEl.textContent = `Level: ${level}`;
+  answerEl.disabled = false;
+  submitBtn.disabled = false;
+  startBtn.disabled = true;
+  nextQuestion();
+});
+
+submitBtn.addEventListener('click', () => {
+  const userAnswer = Number(answerEl.value);
+  if(userAnswer === currentAnswer){
+    score += timer * 5; // jawaban cepat = poin lebih tinggi
+    alert(`Correct! +${timer*5} points`);
+  } else {
+    alert(`Wrong! Correct answer: ${currentAnswer}`);
+  }
+  scoreEl.textContent = `Score: ${score}`;
+  scores.push(score);
+  updateLeaderboard();
+  nextQuestion();
+});
+
+function updateLeaderboard(){
+  scoresList.innerHTML = '';
+  scores.slice(-5).reverse().forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    scoresList.appendChild(li);
+  });
+}
+</script>
+
+</body>
+</html>
